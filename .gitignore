@@ -1,11 +1,21 @@
 # Prerequisites
 *.d
+*.tlog
+*.log
+*.idb
+*.pdb
+*.vcxproj
+*.filters
+*.tlog
 
 # Compiled Object files
 *.slo
 *.lo
 *.o
 *.obj
+*.ilk
+*.opendb
+*.db
 
 # Precompiled Headers
 *.gch
