@@ -13,7 +13,7 @@ MessageSendJob::~MessageSendJob()
 void MessageSendJob::ExecuteJob()
 {
 	SOCKET socket;
-	addrinfo* result = WinsocketManager::GetInstance().CreateSocketClient("129.0.0.1", "27015", WinsocketManager::Protocol::TCP, socket);
+	addrinfo* result = WinsocketManager::GetInstance().CreateSocketClient("127.0.0.1", "27015", WinsocketManager::Protocol::TCP, socket);
 
 	if (result != nullptr)
 	{
@@ -44,11 +44,6 @@ void MessageSendJob::ExecuteJob()
 				printf("shutdown failed: %d\n", WSAGetLastError());
 				closesocket(socket);
 				WSACleanup();
-			}
-
-			if () 
-			{
-			
 			}
 
 			do 

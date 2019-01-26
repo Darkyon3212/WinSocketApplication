@@ -79,13 +79,14 @@ addrinfo* WinsocketManager::CreateSocketClient(const char* ip, const char* port,
 	int IResult;
 
 	IResult = getaddrinfo(ip, port, &hints, &result);
-	if (result != 0) {
+
+	if (IResult != 0) {
 		printf("getaddrinfo failed: %d\n", IResult);
 		WSACleanup();
 		return result;
 	}
 
-	rSocket = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
+	rSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 	if (rSocket == INVALID_SOCKET) {
 		printf("Error at socket(): %ld\n", WSAGetLastError());
 		freeaddrinfo(result);
