@@ -157,7 +157,8 @@
   <ItemGroup>
     <ClInclude Include="ImageRecJob.h" />
     <ClInclude Include="MemoryManager.h" />
-    <ClInclude Include="MessageSendJob.h" />
+    <ClInclude Include="MessageJob.h" />
+    <ClInclude Include="NetworkJob.h" />
     <ClInclude Include="Singleton.hpp" />
     <ClInclude Include="TGAJob.h" />
     <ClInclude Include="TGAWriter.h" />
@@ -169,7 +170,8 @@
     <ClCompile Include="ImageRecJob.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MemoryManager.cpp" />
-    <ClCompile Include="MessageSendJob.cpp" />
+    <ClCompile Include="MessageJob.cpp" />
+    <ClCompile Include="NetworkJob.cpp" />
     <ClCompile Include="TGAJob.cpp" />
     <ClCompile Include="TGAWriter.cpp" />
     <ClCompile Include="tga_reader.c" />

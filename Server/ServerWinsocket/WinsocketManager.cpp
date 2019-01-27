@@ -20,7 +20,7 @@ int WinsocketManager::InitWinsocket()
 	return result;
 }
 
-addrinfo* WinsocketManager::CreateSocket(const char* port, Protocol protocol, SOCKET& rSocket)
+addrinfo* WinsocketManager::CreateSocketRecive(const char* port, Protocol protocol, SOCKET& rSocket)
 {
 	struct addrinfo *result = nullptr, *ptr = NULL, hints;
 
@@ -44,7 +44,6 @@ addrinfo* WinsocketManager::CreateSocket(const char* port, Protocol protocol, SO
 	if (IResult != 0)
 	{
 		printf("getaddrinfo failed: %d\n", IResult);
-		WSACleanup();
 
 		return result;
 	}
@@ -53,11 +52,10 @@ addrinfo* WinsocketManager::CreateSocket(const char* port, Protocol protocol, SO
 
 	ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 
-	if (ListenSocket == INVALID_SOCKET) 
+	if (ListenSocket == INVALID_SOCKET)
 	{
 		printf("Error at socket(): %ld\n", WSAGetLastError());
 		freeaddrinfo(result);
-		WSACleanup();
 
 		return result;
 	}
@@ -67,16 +65,43 @@ addrinfo* WinsocketManager::CreateSocket(const char* port, Protocol protocol, SO
 	return result;
 }
 
+addrinfo* WinsocketManager::CreateSocketSend(const char* ip, const char* port, Protocol protocol, SOCKET& rSocket)
+{
+	struct addrinfo *result = NULL, *ptr = NULL, hints;
+
+	ZeroMemory(&hints, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+
+	int IResult;
+
+	IResult = getaddrinfo(ip, port, &hints, &result);
+
+	if (IResult != 0) {
+		printf("getaddrinfo failed: %d\n", IResult);
+		return result;
+	}
+
+	rSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+	if (rSocket == INVALID_SOCKET) {
+		printf("Error at socket(): %ld\n", WSAGetLastError());
+		freeaddrinfo(result);
+		return result;
+	}
+
+	return result;
+}
+
 int WinsocketManager::BindSocket(SOCKET& rSocket, addrinfo* result)
 {
 	int success = 0;
-	
+
 	success = bind(rSocket, result->ai_addr, (int)result->ai_addrlen);
 	if (success == SOCKET_ERROR) {
 		printf("bind failed with error: %d\n", WSAGetLastError());
 		freeaddrinfo(result);
 		closesocket(rSocket);
-		WSACleanup();
 		return 1;
 	}
 
@@ -91,7 +116,6 @@ int WinsocketManager::Listen(SOCKET& rSocket)
 	if (result == SOCKET_ERROR)
 	{
 		closesocket(rSocket);
-		WSACleanup();
 	}
 
 	return 0;
@@ -107,8 +131,27 @@ SOCKET WinsocketManager::Accept(SOCKET& rSocket)
 	if (ClientSocket == INVALID_SOCKET)
 	{
 		closesocket(rSocket);
-		WSACleanup();
 	}
-	
+
 	return ClientSocket;
+}
+
+int WinsocketManager::Connect(SOCKET& rSocket, addrinfo* result)
+{
+	int iResult = connect(rSocket, result->ai_addr, (int)result->ai_addrlen);
+	if (iResult == SOCKET_ERROR) {
+		closesocket(rSocket);
+		rSocket = INVALID_SOCKET;
+	}
+
+	freeaddrinfo(result);
+
+	if (rSocket == INVALID_SOCKET) {
+		printf("Unable to connect to server!\n");
+
+
+		return 1;
+	}
+
+	return 0;
 }

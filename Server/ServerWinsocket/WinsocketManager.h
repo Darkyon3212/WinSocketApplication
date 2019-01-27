@@ -25,10 +25,12 @@ public:
 	};
 
 	int InitWinsocket();
-	addrinfo* CreateSocket(const char* port, Protocol protocol, SOCKET& rSocket);
+	addrinfo* CreateSocketRecive(const char* port, Protocol protocol, SOCKET& rSocket);
+	addrinfo* CreateSocketSend(const char* ip, const char* port, Protocol protocol, SOCKET& rSocket);
 	int BindSocket(SOCKET& rSocket, addrinfo* result);
 	int Listen(SOCKET& rSocket);
 	SOCKET Accept(SOCKET& rSocket);
+	int Connect(SOCKET& rSocket, addrinfo* result);
 
 private:
 	WSADATA m_wsaData;

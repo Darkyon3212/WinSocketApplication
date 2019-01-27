@@ -1,8 +1,13 @@
 #include <iostream>
+#include <cstring>
+#include <string>
+#include <sstream>
+#include <cmath>
 
 #include "ImageRecJob.h"
+#include "TGAWriter.h"
 
-static const int DEFAULT_BUFLEN = 350000;
+static const int DEFAULT_BUFLEN_FILE = 80000000;
 
 
 ImageRecJob::ImageRecJob()
@@ -31,7 +36,7 @@ void ImageRecJob::ExecuteJob()
 		{
 			while (done == false)
 			{
-				printf("Listening for receiving images");
+				printf("Listening for receiving images\n");
 
 				iResult = WinsocketManager::GetInstance().Listen(socket);
 
@@ -43,19 +48,55 @@ void ImageRecJob::ExecuteJob()
 
 					printf("Receving image...\n");
 
-					char recvbuf[DEFAULT_BUFLEN];
+					char* recvbuf = new char[DEFAULT_BUFLEN_FILE];
 					int iResult, iSendResult;
-					int recvbuflen = DEFAULT_BUFLEN;
+					int recvbuflen = DEFAULT_BUFLEN_FILE;
 
 					// Receive until the peer shuts down the connection
-					do {
+					do 
+					{
 
-						iResult = recv(clientSocket, recvbuf, recvbuflen, 0);
+						iResult = recv(clientSocket, recvbuf, recvbuflen, MSG_WAITALL);
 
-						if (iResult > 0) {
+						if (iResult > 0) 
+						{
 
 							printf("Bytes received: %d\n", iResult);
-							printf("Output: \n", iResult);
+
+							unsigned char* pixelData = new unsigned char[iResult - 2];
+
+							//int size = sizeof(recvbuf) / sizeof(*recvbuf);
+
+							int widthSize = (unsigned char)recvbuf[iResult - 2];
+							int heightSize = (unsigned char)recvbuf[iResult - 1];
+
+							// Get width
+							int width = 0;
+							int height = 0;
+
+							for (int i = 0; i < widthSize; i++)
+							{
+								int digit = (int)recvbuf[iResult - i - (heightSize + 1) - 2];
+
+								width += digit * pow(10, i);
+							}
+
+							// Get height
+							for (int i = 0; i < heightSize; i++)
+							{
+								int digit = (int)recvbuf[iResult - i - 3];
+
+								height += digit * pow(10, i);
+							}
+
+							for (int i = 0; i < iResult - widthSize - heightSize - 2; i++)
+							{
+								pixelData[i] = recvbuf[i];
+							}
+
+							//memcpy(pixelData, recvbuf, iResult);
+
+							TGAWriter::GetInstance().save("output.tga", pixelData, width, height);
 
 							// Echo the buffer back to the sender
 							const char* sendBuffer = "1";

@@ -38,7 +38,7 @@ void TGAJob::ExecuteJob()
 	unsigned char* entirePixels = (unsigned char*)tgaRead(m_pImageBuffer, TGA_READER_ABGR);
 
 	unsigned char* chunkPixels = GetChunkPixels(entirePixels, sourceWidth, sourceHeight);
-	savedPixelArray = ResizeChunk(chunkPixels, sourceWidth, sourceHeight);
+	savedPixelArray = chunkPixels;
 	delete[] chunkPixels;
 }
 
@@ -52,7 +52,7 @@ void TGAJob::Convert()
 	stream << ".tga";
 	std::string path = stream.str();
 
-	TGAWriter::GetInstance().save(path.c_str(), savedPixelArray, 256, 256);
+	TGAWriter::GetInstance().save(path.c_str(), savedPixelArray, m_width, m_height);
 
 	delete[] savedPixelArray;
 

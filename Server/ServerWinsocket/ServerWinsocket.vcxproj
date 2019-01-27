@@ -155,8 +155,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ChunkSendJob.h" />
+    <ClInclude Include="ImageSendJob.h" />
     <ClInclude Include="MemoryManager.h" />
     <ClInclude Include="MessageJob.h" />
+    <ClInclude Include="NetworkJob.h" />
+    <ClInclude Include="ServerManager.h" />
     <ClInclude Include="Singleton.hpp" />
     <ClInclude Include="TGAJob.h" />
     <ClInclude Include="TGAWriter.h" />
@@ -165,9 +169,13 @@
     <ClInclude Include="WinsocketManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ChunkSendJob.cpp" />
+    <ClCompile Include="ImageSendJob.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MemoryManager.cpp" />
     <ClCompile Include="MessageJob.cpp" />
+    <ClCompile Include="NetworkJob.cpp" />
+    <ClCompile Include="ServerManager.cpp" />
     <ClCompile Include="TGAJob.cpp" />
     <ClCompile Include="TGAWriter.cpp" />
     <ClCompile Include="tga_reader.c" />

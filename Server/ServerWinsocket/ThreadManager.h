@@ -15,7 +15,7 @@ public:
 	struct Job
 	{
 		virtual void ExecuteJob() = 0;
-		virtual void Convert() = 0;
+		virtual void Convert() {};
 	};
 
 	static bool ThreadRun();

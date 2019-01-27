@@ -1,11 +1,15 @@
 #include <iostream>
 
 #include "MessageJob.h"
+#include "ServerManager.h"
 
 
 static const int DEFAULT_BUFLEN = 512;
 
-MessageJob::MessageJob()
+MessageJob::MessageJob(MessageType type, std::string clientIP, std::string message)
+	: m_type(type)
+	, m_clientIP(clientIP)
+	, m_message(message)
 {
 
 }
@@ -17,94 +21,121 @@ MessageJob::~MessageJob()
 
 void MessageJob::ExecuteJob()
 {
-	SOCKET socket;
-	addrinfo* result = WinsocketManager::GetInstance().CreateSocket("27015", WinsocketManager::Protocol::TCP, socket);
-	bool done = false;
-
-	if (result != nullptr)
+	if (m_type == MessageType::EPrivate)
 	{
-		int iResult = WinsocketManager::GetInstance().BindSocket(socket, result);
-
-		if (iResult == 0)
-		{
-			while (done == false)
-			{
-				iResult = WinsocketManager::GetInstance().Listen(socket);
-
-				if (iResult == 0)
-				{
-					// Wait for a client to be connected
-					SOCKET clientSocket = WinsocketManager::GetInstance().Accept(socket);
-
-					printf("Client is now connected!\n");
-
-					char recvbuf[DEFAULT_BUFLEN];
-					int iResult, iSendResult;
-					int recvbuflen = DEFAULT_BUFLEN;
-
-					// Receive until the peer shuts down the connection
-					do {
-
-						iResult = recv(clientSocket, recvbuf, recvbuflen, 0);
-
-						if (iResult > 0) {
-
-							printf("Bytes received: %d\n", iResult);
-							printf("Output: \n", iResult);
-
-							for (int i = 0; i < iResult; i++)
-							{
-								if (!recvbuf[i] == NULL)
-								{
-									std::cout << recvbuf[i];
-								}
-								else
-								{
-									break;
-								}
-							}
-
-							std::cout << std::endl;
-
-							// Echo the buffer back to the sender
-							iSendResult = send(clientSocket, recvbuf, iResult, 0);
-							if (iSendResult == SOCKET_ERROR) {
-								printf("send failed: %d\n", WSAGetLastError());
-								closesocket(clientSocket);
-								WSACleanup();
-							}
-							printf("Bytes sent: %d\n", iSendResult);
-						}
-						else if (iResult == 0)
-							printf("Connection closing...\n");
-						else {
-							printf("recv failed: %d\n", WSAGetLastError());
-							closesocket(clientSocket);
-							WSACleanup();
-						}
-
-					} while (iResult > 0);
-
-					iResult = shutdown(clientSocket, SD_SEND);
-					if (iResult == SOCKET_ERROR) {
-						printf("shutdown failed: %d\n", WSAGetLastError());
-
-						closesocket(clientSocket);
-						WSACleanup();
-
-						done = true;
-					} 
-					else
-					{
-						closesocket(clientSocket);
-					}
-				}
-			}
-		}	
+		Private();
+	}
+	else if (m_type == MessageType::EBroadcast)
+	{
+		Broadcast();
 	}
 }
 
 void MessageJob::Convert()
 {
 
+}
+
+void MessageJob::Private()
+{
+	SOCKET socket;
+	addrinfo* result = WinsocketManager::GetInstance().CreateSocketSend(m_clientIP.c_str(), "1340", WinsocketManager::Protocol::TCP, socket);
+	bool done = false;
+
+	if (result != nullptr)
+	{
+		int IResult = WinsocketManager::GetInstance().Connect(socket, result);
+
+		if (IResult == 0)
+		{
+			// Send message
+
+			int sizeOfSendBuffer = m_message.size();
+			const char* sendBuffer = m_message.c_str();
+
+			int recvbuflen = 512;
+			char recvbuf[512];
+
+			int iResult = send(socket, sendBuffer, sizeOfSendBuffer, 0);
+			if (iResult == SOCKET_ERROR)
+			{
+				printf("send failed: %d\n", WSAGetLastError());
+				closesocket(socket);
+			}
+
+			printf("Bytes Sent: %ld\n", iResult);
+
+			iResult = shutdown(socket, SD_SEND);
+			if (iResult == SOCKET_ERROR)
+			{
+				printf("shutdown failed: %d\n", WSAGetLastError());
+				closesocket(socket);
+			}
+
+			do
+			{
+				iResult = recv(socket, recvbuf, recvbuflen, 0);
+				if (iResult > 0)
+					printf("Bytes received: %d\n", iResult);
+				else if (iResult == 0)
+					printf("Connection closed\n");
+				else
+					printf("recv failed: %d\n", WSAGetLastError());
+			} while (iResult > 0);
+		}
+	}
+}
+
+void MessageJob::Broadcast()
+{
+	for (int i = 0; i < ServerManager::GetInstance().GetAvaibleIPs().size(); i++)
+	{
+		std::string ip = ServerManager::GetInstance().GetAvaibleIPs().at(i);
+
+		SOCKET socket;
+		addrinfo* result = WinsocketManager::GetInstance().CreateSocketSend(ip.c_str(), "1340", WinsocketManager::Protocol::TCP, socket);
+
+		if (result != nullptr)
+		{
+			int IResult = WinsocketManager::GetInstance().Connect(socket, result);
+
+			if (IResult == 0)
+			{
+				// Send message
+
+				int sizeOfSendBuffer = m_message.size();
+				const char* sendBuffer = m_message.c_str();
+
+				int recvbuflen = 512;
+				char recvbuf[512];
+
+				int iResult = send(socket, sendBuffer, sizeOfSendBuffer, 0);
+				if (iResult == SOCKET_ERROR)
+				{
+					printf("send failed: %d\n", WSAGetLastError());
+					closesocket(socket);
+				}
+
+				printf("Bytes Sent: %ld\n", iResult);
+
+				iResult = shutdown(socket, SD_SEND);
+				if (iResult == SOCKET_ERROR)
+				{
+					printf("shutdown failed: %d\n", WSAGetLastError());
+					closesocket(socket);
+				}
+
+				do
+				{
+					iResult = recv(socket, recvbuf, recvbuflen, 0);
+					if (iResult > 0)
+						printf("Bytes received: %d\n", iResult);
+					else if (iResult == 0)
+						printf("Connection closed\n");
+					else
+						printf("recv failed: %d\n", WSAGetLastError());
+				} while (iResult > 0);
+			}
+		}
+	}
 }
