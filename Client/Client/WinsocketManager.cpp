@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "WinsocketManager.h"
 
 
@@ -26,6 +28,7 @@ addrinfo* WinsocketManager::CreateSocket(const char* port, Protocol protocol, SO
 
 	ZeroMemory(&hints, sizeof(hints));
 	hints.ai_family = AF_INET;
+	hints.ai_flags = AI_PASSIVE;
 
 	if (protocol == Protocol::TCP)
 	{
@@ -78,7 +81,7 @@ addrinfo* WinsocketManager::CreateSocketClient(const char* ip, const char* port,
 
 	int IResult;
 
-	IResult = getaddrinfo(ip, port, &hints, &result);
+	IResult = getaddrinfo("192.168.1.109", port, &hints, &result);
 
 	if (IResult != 0) {
 		printf("getaddrinfo failed: %d\n", IResult);
@@ -146,7 +149,9 @@ SOCKET WinsocketManager::Accept(SOCKET& rSocket)
 int WinsocketManager::Connect(SOCKET& rSocket, addrinfo* result)
 {
 	int iResult = connect(rSocket, result->ai_addr, (int)result->ai_addrlen);
+
 	if (iResult == SOCKET_ERROR) {
+		std::cout << WSAGetLastError() << std::endl;
 		closesocket(rSocket);
 		rSocket = INVALID_SOCKET;
 	}

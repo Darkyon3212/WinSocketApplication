@@ -6,6 +6,8 @@
 *.pdb
 *.filters
 *.tlog
+*.sou
+*.ipch
 
 # Compiled Object files
 *.slo

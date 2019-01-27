@@ -70,6 +70,8 @@ void NetworkJob::Connect()
 					printf("recv failed: %d\n", WSAGetLastError());
 			} while (iResult > 0);
 		}
+
+
 	}
 }
 

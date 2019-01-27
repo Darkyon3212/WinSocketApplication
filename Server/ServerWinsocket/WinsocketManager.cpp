@@ -26,6 +26,7 @@ addrinfo* WinsocketManager::CreateSocketRecive(const char* port, Protocol protoc
 
 	ZeroMemory(&hints, sizeof(hints));
 	hints.ai_family = AF_INET;
+	hints.ai_flags = AI_PASSIVE;
 
 	if (protocol == Protocol::TCP)
 	{
